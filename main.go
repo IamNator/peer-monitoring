@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,8 +30,8 @@ func (d Data) TableName() string {
 // QueryParams represents the query parameters for filtering sensor data
 type QueryParams struct {
 	DeviceID  string `json:"device_id"`
-	StartTime int64  `json:"start_time"`
-	EndTime   int64  `json:"end_time"`
+	StartTime string `json:"start_time"`
+	EndTime   string `json:"end_time"`
 }
 
 var db *gorm.DB
@@ -103,31 +104,31 @@ func handleSensorData(c *gin.Context) {
 
 // handleDataQuery handles GET requests to fetch and process sensor data
 func handleDataQuery(c *gin.Context) {
-	var params QueryParams
-	if err := c.ShouldBindJSON(&params); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	var params = QueryParams{
+		DeviceID:  c.Query("device_id"),
+		StartTime: c.Query("start_time"),
+		EndTime:   c.Query("end_time"),
 	}
 
-	var data []Data
 	// Fetch data from the database using GORM with filters
-
-	if params.EndTime == 0 {
-		params.EndTime = time.Now().Unix()
-	}
-	startTime := time.Unix(params.StartTime, 0)
-	endTime := time.Unix(params.EndTime, 0)
+	start, _ := strconv.Atoi(params.StartTime)
+	end, _ := strconv.Atoi(params.EndTime)
 
 	dd := db.Where("id IS NOT NULL")
 	if params.DeviceID != "" {
 		dd = dd.Where("device_id = ?", params.DeviceID)
 	}
-	if params.StartTime != 0 {
+
+	if start != 0 {
+		startTime := time.Unix(int64(start), 0)
 		dd = dd.Where("created_at >= ?", startTime)
 	}
-	if params.EndTime != 0 {
+	if end != 0 {
+		endTime := time.Unix(int64(end), 0)
 		dd = dd.Where("created_at <= ?", endTime)
 	}
+
+	var data []Data
 	dd.Find(&data)
 
 	// Calculate average values
