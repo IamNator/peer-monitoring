@@ -101,20 +101,39 @@ func main() {
 	log.Fatal(r.Run(":8080"))
 }
 
+type DataRequest struct {
+	DeviceID      string  `json:"device_id" gorm:"index;column:device_id"`
+	IsBackedup    bool    `json:"is_backedup" gorm:"column:is_backedup"`
+	Temperature   float64 `json:"temperature" gorm:"column:temperature"`
+	Humidity      float64 `json:"humidity" gorm:"column:humidity"`
+	EthyleneLevel float64 `json:"ethylene_level" gorm:"column:ethylene_level"`
+	UploadedBy    string  `json:"uploaded_by" gorm:"column:uploaded_by"`
+	CreatedAt     int64   `json:"created_at" gorm:"column:created_at;type:timestamp with time zone"`
+}
+
 // handleSensorData handles incoming sensor data POST requests
 func handleSensorData(c *gin.Context) {
-	var data Data
-	if err := c.ShouldBindJSON(&data); err != nil {
+	var req DataRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	var data = Data{
+		ID:            time.Now().Format("20060102150405"),
+		DeviceID:      req.DeviceID,
+		CreatedAt:     time.Unix(req.CreatedAt, 0),
+		IsBackedup:    req.IsBackedup,
+		Temperature:   req.Temperature,
+		Humidity:      req.Humidity,
+		EthyleneLevel: req.EthyleneLevel,
+		UploadedBy:    req.UploadedBy,
+	}
+
 	// Set the "uploaded_by" field based on request context (e.g., authenticated user)
 	if data.UploadedBy == "" {
-		data.UploadedBy = "1123341"
+		data.UploadedBy = "43542345435435"
 	}
-	data.ID = time.Now().Format("20060102150405")
-	data.CreatedAt = time.Now()
 
 	// Create new record in the database using GORM
 	result := db.Create(&data)
@@ -153,7 +172,9 @@ func handleDataQuery(c *gin.Context) {
 	}
 
 	var data []Data
-	dd.Find(&data)
+	dd.
+		Order("created_at DESC").
+		Find(&data)
 
 	// Calculate average values
 	var totalTemp, totalHumidity, totalEthyleneLevel float64
