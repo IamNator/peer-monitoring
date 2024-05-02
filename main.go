@@ -23,6 +23,30 @@ type Data struct {
 	CreatedAt     time.Time `json:"created_at" gorm:"column:created_at;type:timestamp with time zone"`
 }
 
+func (d Data) Pressent() DataPresented {
+	return DataPresented{
+		ID:            d.ID,
+		DeviceID:      d.DeviceID,
+		IsBackedup:    d.IsBackedup,
+		Temperature:   d.Temperature,
+		Humidity:      d.Humidity,
+		EthyleneLevel: d.EthyleneLevel,
+		UploadedBy:    d.UploadedBy,
+		CreatedAt:     int(d.CreatedAt.Unix()),
+	}
+}
+
+type DataPresented struct {
+	ID            string  `gorm:"primaryKey;column:id" json:"id"`
+	DeviceID      string  `json:"device_id" gorm:"index;column:device_id"`
+	IsBackedup    bool    `json:"is_backedup" gorm:"column:is_backedup"`
+	Temperature   float64 `json:"temperature" gorm:"column:temperature"`
+	Humidity      float64 `json:"humidity" gorm:"column:humidity"`
+	EthyleneLevel float64 `json:"ethylene_level" gorm:"column:ethylene_level"`
+	UploadedBy    string  `json:"uploaded_by" gorm:"column:uploaded_by"`
+	CreatedAt     int     `json:"created_at" gorm:"column:created_at;type:timestamp with time zone"`
+}
+
 func (d Data) TableName() string {
 	return "sensor_data"
 }
@@ -147,10 +171,15 @@ func handleDataQuery(c *gin.Context) {
 		avgEthyleneLevel = totalEthyleneLevel / float64(count)
 	}
 
+	var presentedData []DataPresented
+	for _, d := range data {
+		presentedData = append(presentedData, d.Pressent())
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"average_temperature":    avgTemp,
 		"average_humidity":       avgHumidity,
 		"average_ethylene_level": avgEthyleneLevel,
-		"data":                   data,
+		"data":                   presentedData,
 	})
 }
