@@ -31,9 +31,24 @@ type QueryParams struct {
 
 var db *gorm.DB
 
+// CorHandler is a middleware function that adds the "Access-Control-Allow-Origin" header
+func CorHandler(c *gin.Context) {
+	origin := c.Request.Header.Get("Origin")
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+	if c.Request.Method == "OPTIONS" {
+		c.AbortWithStatus(204)
+		return
+	}
+	c.Next()
+}
+
 func main() {
 	// Initialize Gin router
 	r := gin.Default()
+	r.Use(CorHandler)
 
 	// Open SQLite database using GORM
 	var err error
