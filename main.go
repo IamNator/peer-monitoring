@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -50,9 +50,9 @@ func main() {
 	r := gin.Default()
 	r.Use(CorHandler)
 
-	// Open SQLite database using GORM
+	// Open Postgres database using GORM
 	var err error
-	db, err = gorm.Open(sqlite.Open("sensor_data.db"), &gorm.Config{})
+	db, err = gorm.Open(postgres.Open("postgres://peer_t9lq_user:SSuEyEAo39US5swHgtTLazWBZBZMI8am@dpg-copm7okf7o1s73e2b6m0-a.frankfurt-postgres.render.com/peer_t9lq"), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
