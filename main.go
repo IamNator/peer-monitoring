@@ -93,7 +93,8 @@ func main() {
 	}
 
 	// Define routes
-	r.POST("/sensor", handleSensorData)     // POST endpoint to upload sensor data
+	r.POST("/sensors", handleSensorData)    // POST endpoint to upload sensor data
+	r.GET("/devices", handleDeviceList)     // GET endpoint to list devices
 	r.GET("/sensor_query", handleDataQuery) // GET endpoint to query sensor data
 
 	// Start HTTP server
@@ -143,6 +144,16 @@ func handleSensorData(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Sensor data received and saved successfully"})
+}
+
+// handleDeviceList handles GET requests to list devices
+func handleDeviceList(c *gin.Context) {
+	var devices []string
+	if err := db.Model(&Data{}).Distinct("device_id").Pluck("device_id", &devices).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"devices": devices})
 }
 
 // handleDataQuery handles GET requests to fetch and process sensor data
