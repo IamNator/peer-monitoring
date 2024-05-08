@@ -93,7 +93,7 @@ func main() {
 	}
 
 	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "Peer backend server is running..."})
+		c.JSONP(http.StatusOK, gin.H{"message": "Peer backend server is running..."})
 	})
 
 	// Define routes
