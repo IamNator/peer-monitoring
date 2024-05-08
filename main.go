@@ -127,6 +127,8 @@ func handleSensorData(c *gin.Context) {
 		return
 	}
 
+	c.Header("Connection", "close")
+
 	if ua := c.Request.Header.Get("User-Agent"); ua != "" {
 		req.UploadedBy = ua
 	}
