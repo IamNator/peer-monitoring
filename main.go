@@ -93,6 +93,7 @@ func main() {
 	}
 
 	r.GET("/health", func(c *gin.Context) {
+		c.Header("Connection", "close")
 		c.JSONP(http.StatusOK, gin.H{"message": "Peer backend server is running..."})
 	})
 
@@ -103,7 +104,8 @@ func main() {
 
 	// Start HTTP server
 	log.Println("Server listening on :8080...")
-	log.Fatal(r.Run(":8080"))
+
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
 type DataRequest struct {
