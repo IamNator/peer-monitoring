@@ -116,6 +116,7 @@ type DataRequest struct {
 func handleSensorData(c *gin.Context) {
 	var req DataRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("Error binding JSON: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
