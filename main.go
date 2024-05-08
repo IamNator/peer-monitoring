@@ -120,6 +120,10 @@ func handleSensorData(c *gin.Context) {
 		return
 	}
 
+	if ua := c.Request.Header.Get("User-Agent"); ua != "" {
+		req.UploadedBy = ua
+	}
+
 	var data = Data{
 		ID:            time.Now().Format("20060102150405"),
 		DeviceID:      req.DeviceID,
