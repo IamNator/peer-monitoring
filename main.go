@@ -92,6 +92,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Peer backend server is running..."})
+	})
+
 	// Define routes
 	r.POST("/sensors", handleSensorData)    // POST endpoint to upload sensor data
 	r.GET("/devices", handleDeviceList)     // GET endpoint to list devices
